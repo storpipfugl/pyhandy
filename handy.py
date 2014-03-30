@@ -1,5 +1,6 @@
-import numpy as np
 from scipy.integrate import ode
+import matplotlib.pyplot as plt
+
 
 def state(_, y, commoner_birth_rate, elite_birth_rate, commoner_death_rate,
         elite_death_rate, nature_capacity, nature_regeneration, depletion, 
@@ -105,10 +106,19 @@ class Society(object):
 
 soc = Society(5e-3, 1, 5e-4, 100, 0, 100, 1e-2, 100, 6.67e-6, 0, 3e-2, 3e-2, 1e-2, 7e-2, 0)
 print(soc.wealth_threshold, soc.commoner_death_rate, soc.elite_death_rate, soc.commoner_death_rate, soc.elite_death_rate)
-time, commoner_population, elite_population, nature, wealth = soc.evolve()
+time, commoner_population, elite_population, nature, wealth = soc.evolve(0, 1000)
 
-for i, year in enumerate(time):
-    print year, commoner_population[i], elite_population[i], nature[i], wealth[i]  
+plt.subplot(411)
+plt.plot(time, commoner_population)
+plt.subplot(412)
+plt.plot(time, elite_population)
+plt.subplot(413)
+plt.plot(time, nature)
+plt.subplot(414)
+plt.plot(time, wealth)
+plt.show()
+#for i, year in enumerate(time):
+#    print year, commoner_population[i], elite_population[i], nature[i], wealth[i]  
 #for i in range(10):
 #    print soc.next()
 
