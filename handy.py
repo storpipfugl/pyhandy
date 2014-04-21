@@ -34,7 +34,7 @@ class Society(object):
         self.elite_birth_rate = float(elite_birth_rate)
         self.normal_death_rate = float(normal_death_rate)
         self.famine_death_rate = float(famine_death_rate)
-        self.year = float(year)
+        self.year = int(year)
 
         self._integrator = ode(state).set_integrator('dopri5')
         self._integrator.set_initial_value((self.commoner_population,
@@ -87,14 +87,14 @@ class Society(object):
         return [self.year, self.commoner_population, self.elite_population, self.nature, 
             self.wealth]
     
-    def evolve(self, year_start=0, year_end=10):
+    def evolve(self, years=1000):
         time = []
         commoner_population = []
         elite_population = []
         nature = []
         wealth = []
 
-        for year in range(year_start, year_end):
+        for year in range(self.year, years):
             next_y, next_cp, next_ep, next_n, next_w = self.next()
             time.append(next_y)
             commoner_population.append(next_cp)
@@ -104,9 +104,67 @@ class Society(object):
 
         return time, commoner_population, elite_population, nature, wealth
 
-soc = Society(5e-3, 1, 5e-4, 100, 0, 100, 1e-2, 100, 6.67e-6, 0, 3e-2, 3e-2, 1e-2, 7e-2, 0)
+
+socity_types = { 'egalitarian': { 'soft': (5e-3, 1, 5e-4, 100, 0, 100, 1e-2,
+                                           100, 6.67e-6, 0, 3e-2, 3e-2, 1e-2,
+                                           7e-2, 0),
+                                  'oscillatory': (5e-3, 1, 5e-4, 100, 0, 100, 1e-2,
+                                           100, 1.67e-5, 0, 3e-2, 3e-2, 1e-2,
+                                           7e-2, 0),
+                                  'cyclic': (5e-3, 1, 5e-4, 100, 0, 100, 1e-2,
+                                           100, 2.67e-5, 0, 3e-2, 3e-2, 1e-2,
+                                           7e-2, 0),
+                                  'collapse': (5e-3, 1, 5e-4, 100, 0, 100, 1e-2,
+                                           100, 3.67e-5, 0, 3e-2, 3e-2, 1e-2,
+                                           7e-2, 0)
+                                },
+                'equitable': { 'soft': (5e-3, 1, 5e-4, 100, 25, 100, 1e-2,
+                                           100, 8.33e-6, 0, 3e-2, 3e-2, 1e-2,
+                                           7e-2, 0),
+                                  'oscillatory': (5e-3, 1, 5e-4, 100, 25, 100, 1e-2,
+                                           100, 2.2e-5, 0, 3e-2, 3e-2, 1e-2,
+                                           7e-2, 0),
+                                  'cyclic': (5e-3, 1, 5e-4, 100, 25, 100, 1e-2,
+                                           100, 3.0e-5, 0, 3e-2, 3e-2, 1e-2,
+                                           7e-2, 0),
+                                  'collapse': (5e-3, 1, 5e-4, 100, 25, 100, 1e-2,
+                                           100, 3.0e-5, 0, 3e-2, 3e-2, 1e-2,
+                                           7e-2, 0),
+                                  'inverse': (5e-3, 1, 5e-4, 100, 600, 100, 1e-2,
+                                           100, 4.33e-5, 0, 3e-2, 3e-2, 1e-2,
+                                           7e-2, 0)
+                                },
+                'unequal': { 'type-l': (5e-3, 100, 5e-4, 100, 1.0e-3, 100, 1e-2,
+                                           100, 6.67e-6, 0, 3e-2, 3e-2, 1e-2,
+                                           7e-2, 0),
+                                  'collapse': (5e-3, 100, 5e-4, 100, 0.2, 100, 1e-2,
+                                           100, 1.0e-4, 0, 3e-2, 3e-2, 1e-2,
+                                           7e-2, 0),
+                                  'soft': (5e-3, 10, 5e-4, 10000, 3000, 100, 1e-2,
+                                           100, 6.35e-6, 0, 6.5e-2, 2.0e-2, 1e-2,
+                                           7e-2, 0),
+                                  'oscillatory': (5e-3, 10, 5e-4, 10000, 3000, 100, 1e-2,
+                                           100, 1.3e-5, 0, 6.5e-2, 2.0e-2, 1e-2,
+                                           7e-2, 0)
+                                }
+           
+    }
+
+
+def create_society(name, soc_type):
+
+    try:
+        init_values = socity_types[name][soc_type]
+        return Society(*init_values)
+    except KeyError:
+        raise ValueError('Unknown society type: {0} {1}'.format(name, soc_type))
+
+
+#soc = Society(5e-3, 1, 5e-4, 100, 0, 100, 1e-2, 100, 6.67e-6, 0, 3e-2, 3e-2, 1e-2, 7e-2, 0)
+#soc = create_society('egalitarian', 'collapse')
+soc = create_society('unequal', 'oscillatory') 
 print(soc.wealth_threshold, soc.commoner_death_rate, soc.elite_death_rate, soc.commoner_death_rate, soc.elite_death_rate)
-time, commoner_population, elite_population, nature, wealth = soc.evolve(0, 1000)
+time, commoner_population, elite_population, nature, wealth = soc.evolve(1000)
 
 plt.subplot(411)
 plt.plot(time, commoner_population)
