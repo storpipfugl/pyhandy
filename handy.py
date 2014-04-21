@@ -1,3 +1,5 @@
+import argparse
+
 from scipy.integrate import ode
 import matplotlib.pyplot as plt
 
@@ -169,6 +171,7 @@ def plot_society(time, commoner_population, elite_population, nature, wealth):
     plt.plot(time, elite_population)
     plt.ylabel('Elite population', fontdict = {'fontsize' : 'x-small'})
     plt.subplot(413)
+    plt.ylim(0, 100)
     plt.plot(time, nature)
     plt.ylabel('Nature (eco-$)', fontdict = {'fontsize' : 'x-small'})
     plt.subplot(414)
@@ -176,37 +179,19 @@ def plot_society(time, commoner_population, elite_population, nature, wealth):
     plt.ylabel('Wealth (eco-$)', fontdict = {'fontsize' : 'x-small'})
     plt.xlabel('Time (years)')
     plt.show()
-    
-#soc = Society(5e-3, 1, 5e-4, 100, 0, 100, 1e-2, 100, 6.67e-6, 0, 3e-2, 3e-2, 1e-2, 7e-2, 0)
-#soc = create_society('egalitarian', 'collapse')
-soc = create_society('unequal', 'oscillatory') 
-print(soc.wealth_threshold, soc.commoner_death_rate, soc.elite_death_rate, soc.commoner_death_rate, soc.elite_death_rate)
-time, commoner_population, elite_population, nature, wealth = soc.evolve(1000)
-plot_society(time, commoner_population, elite_population, nature, wealth)
-"""plt.subplot(411)
-plt.plot(time, commoner_population)
-plt.subplot(412)
-plt.plot(time, elite_population)
-plt.subplot(413)
-plt.plot(time, nature)
-plt.subplot(414)
-plt.plot(time, wealth)
-plt.show()"""
-#for i, year in enumerate(time):
-#    print year, commoner_population[i], elite_population[i], nature[i], wealth[i]  
-#for i in range(10):
-#    print soc.next()
-
-#y0, t0 = [1.0, 1.0, 1.0, 1.0], 0
 
 
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('society', help='Society. One of {egalitarian, equitable, unequal}')
+    parser.add_argument('type', help='Socity type. Supported types for socities are: egalitarian : {soft, oscillatory, cyclic, collapse}, equitable : {soft, oscillatory, cyclic, collapse, inverse}, unequal : {type-l, collapse, soft, oscillatory}')
+    parser.add_argument('years', help='Years to run society model')
+    args = parser.parse_args()
+    soc = create_society(args.society, args.type) 
+    result = soc.evolve(int(args.years))
+    plot_society(*result)
 
-#r = ode(state).set_integrator('dopri5')
-#r.set_initial_value(y0, t0)
-#t1 = 10
-#dt = 1
-#while r.successful() and r.t < t1:
-#    r.integrate(r.t+dt)
-#    print("%g %s" % (r.t, r.y))
 
+if __name__ == '__main__':
+    main()
 
