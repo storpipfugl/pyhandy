@@ -160,13 +160,30 @@ def create_society(name, soc_type):
         raise ValueError('Unknown society type: {0} {1}'.format(name, soc_type))
 
 
+def plot_society(time, commoner_population, elite_population, nature, wealth):
+    plt.clf()
+    plt.subplot(411)
+    plt.plot(time, commoner_population)
+    plt.ylabel('Commoner population', fontdict = {'fontsize' : 'x-small'})
+    plt.subplot(412)
+    plt.plot(time, elite_population)
+    plt.ylabel('Elite population', fontdict = {'fontsize' : 'x-small'})
+    plt.subplot(413)
+    plt.plot(time, nature)
+    plt.ylabel('Nature (eco-$)', fontdict = {'fontsize' : 'x-small'})
+    plt.subplot(414)
+    plt.plot(time, wealth)
+    plt.ylabel('Wealth (eco-$)', fontdict = {'fontsize' : 'x-small'})
+    plt.xlabel('Time (years)')
+    plt.show()
+    
 #soc = Society(5e-3, 1, 5e-4, 100, 0, 100, 1e-2, 100, 6.67e-6, 0, 3e-2, 3e-2, 1e-2, 7e-2, 0)
 #soc = create_society('egalitarian', 'collapse')
 soc = create_society('unequal', 'oscillatory') 
 print(soc.wealth_threshold, soc.commoner_death_rate, soc.elite_death_rate, soc.commoner_death_rate, soc.elite_death_rate)
 time, commoner_population, elite_population, nature, wealth = soc.evolve(1000)
-
-plt.subplot(411)
+plot_society(time, commoner_population, elite_population, nature, wealth)
+"""plt.subplot(411)
 plt.plot(time, commoner_population)
 plt.subplot(412)
 plt.plot(time, elite_population)
@@ -174,7 +191,7 @@ plt.subplot(413)
 plt.plot(time, nature)
 plt.subplot(414)
 plt.plot(time, wealth)
-plt.show()
+plt.show()"""
 #for i, year in enumerate(time):
 #    print year, commoner_population[i], elite_population[i], nature[i], wealth[i]  
 #for i in range(10):
