@@ -1,5 +1,10 @@
 import argparse
 
+import scipy
+scipy_version = [int(x) for x in scipy.__version__.split('.')]
+if scipy_version < [0, 10, 0]:
+    # dopri5 ODE broken before 0.10.0
+    raise Exception('Scipy version >= 0.10.0 needed by pyhandy')
 from scipy.integrate import ode
 import matplotlib.pyplot as plt
 
@@ -7,6 +12,8 @@ import matplotlib.pyplot as plt
 def state(_, y, commoner_birth_rate, elite_birth_rate, commoner_death_rate,
         elite_death_rate, nature_capacity, nature_regeneration, depletion, 
         commoner_comsumption, elite_consumption):
+    """ODE functions
+    """
     return [
         commoner_birth_rate * y[0] - commoner_death_rate * y[0], 
         elite_birth_rate * y[1] - elite_death_rate * y[1],
@@ -15,12 +22,15 @@ def state(_, y, commoner_birth_rate, elite_birth_rate, commoner_death_rate,
     ]
 
 class Society(object):
+    """A society conforming to the HANDY model
+    """
 
     def __init__(self, min_required_consumption, output_division, salary,
         commoner_population, elite_population, nature, nature_regeneration, 
-        nature_capacity, depletion, wealth,
-        commoner_birth_rate, elite_birth_rate,
-        normal_death_rate, famine_death_rate, year):
+        nature_capacity, depletion, wealth, commoner_birth_rate,
+        elite_birth_rate, normal_death_rate, famine_death_rate, year):
+        """Initial conditions for the HANDY model
+        """
 
         self.min_required_consumption = float(min_required_consumption)
         self.output_division = float(output_division)
@@ -83,9 +93,13 @@ class Society(object):
                 (self.nature_capacity / 2) ** 2)
 
     def next(self):
+        """Advance the society one time step
+        """
+
         self._integrator.set_f_params(self.commoner_birth_rate,
             self.elite_birth_rate, self.commoner_death_rate,
-            self.elite_death_rate, self.nature_capacity, self.nature_regeneration, self.depletion, 
+            self.elite_death_rate, self.nature_capacity,
+            self.nature_regeneration, self.depletion, 
             self.commoner_comsumption, self.elite_consumption)
 
         self._integrator.integrate(self._integrator.t + 1)
@@ -97,6 +111,9 @@ class Society(object):
             self.wealth]
     
     def evolve(self, years=1000):
+        """Advance the society a specified number of years
+        """
+
         time = []
         commoner_population = []
         elite_population = []
@@ -116,48 +133,39 @@ class Society(object):
         return time, commoner_population, elite_population, nature, wealth, carrying_capacity
 
 
-socity_types = { 'egalitarian': { 'soft': (5e-3, 1, 5e-4, 100, 0, 100, 1e-2,
-                                           100, 6.67e-6, 0, 3e-2, 3e-2, 1e-2,
-                                           7e-2, 0),
-                                  'oscillatory': (5e-3, 1, 5e-4, 100, 0, 100, 1e-2,
-                                           100, 1.67e-5, 0, 3e-2, 3e-2, 1e-2,
-                                           7e-2, 0),
-                                  'cyclic': (5e-3, 1, 5e-4, 100, 0, 100, 1e-2,
-                                           100, 2.67e-5, 0, 3e-2, 3e-2, 1e-2,
-                                           7e-2, 0),
-                                  'collapse': (5e-3, 1, 5e-4, 100, 0, 100, 1e-2,
-                                           100, 3.67e-5, 0, 3e-2, 3e-2, 1e-2,
-                                           7e-2, 0)
-                                },
-                'equitable': { 'soft': (5e-3, 1, 5e-4, 100, 25, 100, 1e-2,
-                                           100, 8.33e-6, 0, 3e-2, 3e-2, 1e-2,
-                                           7e-2, 0),
-                                  'oscillatory': (5e-3, 1, 5e-4, 100, 25, 100, 1e-2,
-                                           100, 2.2e-5, 0, 3e-2, 3e-2, 1e-2,
-                                           7e-2, 0),
-                                  'cyclic': (5e-3, 1, 5e-4, 100, 25, 100, 1e-2,
-                                           100, 3.0e-5, 0, 3e-2, 3e-2, 1e-2,
-                                           7e-2, 0),
-                                  'collapse': (5e-3, 1, 5e-4, 100, 25, 100, 1e-2,
-                                           100, 3.0e-5, 0, 3e-2, 3e-2, 1e-2,
-                                           7e-2, 0),
-                                  'inverse': (5e-3, 1, 5e-4, 100, 600, 100, 1e-2,
-                                           100, 4.33e-5, 0, 3e-2, 3e-2, 1e-2,
-                                           7e-2, 0)
-                                },
-                'unequal': { 'type-l': (5e-3, 100, 5e-4, 100, 1.0e-3, 100, 1e-2,
-                                           100, 6.67e-6, 0, 3e-2, 3e-2, 1e-2,
-                                           7e-2, 0),
-                                  'collapse': (5e-3, 100, 5e-4, 100, 0.2, 100, 1e-2,
-                                           100, 1.0e-4, 0, 3e-2, 3e-2, 1e-2,
-                                           7e-2, 0),
-                                  'soft': (5e-3, 10, 5e-4, 10000, 3000, 100, 1e-2,
-                                           100, 6.35e-6, 0, 6.5e-2, 2.0e-2, 1e-2,
-                                           7e-2, 0),
-                                  'oscillatory': (5e-3, 10, 5e-4, 10000, 3000, 100, 1e-2,
-                                           100, 1.3e-5, 0, 6.5e-2, 2.0e-2, 1e-2,
-                                           7e-2, 0)
-                                }
+socity_types = { 
+    'egalitarian': { 
+        'soft': (5e-3, 1, 5e-4, 100, 0, 100, 1e-2, 100, 6.67e-6, 0, 3e-2,
+                 3e-2, 1e-2, 7e-2, 0),
+        'oscillatory': (5e-3, 1, 5e-4, 100, 0, 100, 1e-2, 100, 1.67e-5, 0,
+                        3e-2, 3e-2, 1e-2, 7e-2, 0),
+        'cyclic': (5e-3, 1, 5e-4, 100, 0, 100, 1e-2, 100, 2.67e-5, 0, 3e-2,
+                   3e-2, 1e-2, 7e-2, 0),
+        'collapse': (5e-3, 1, 5e-4, 100, 0, 100, 1e-2, 100, 3.67e-5, 0, 3e-2,
+                     3e-2, 1e-2, 7e-2, 0)
+        },
+    'equitable': {
+        'soft': (5e-3, 1, 5e-4, 100, 25, 100, 1e-2, 100, 8.33e-6, 0, 3e-2,
+                 3e-2, 1e-2, 7e-2, 0),
+        'oscillatory': (5e-3, 1, 5e-4, 100, 25, 100, 1e-2, 100, 2.2e-5, 0,
+                        3e-2, 3e-2, 1e-2, 7e-2, 0),
+        'cyclic': (5e-3, 1, 5e-4, 100, 25, 100, 1e-2, 100, 3.0e-5, 0, 3e-2,
+                   3e-2, 1e-2, 7e-2, 0),
+        'collapse': (5e-3, 1, 5e-4, 100, 25, 100, 1e-2, 100, 3.0e-5, 0,
+                     3e-2, 3e-2, 1e-2, 7e-2, 0),
+        'inverse': (5e-3, 1, 5e-4, 100, 600, 100, 1e-2, 100, 4.33e-5, 0, 3e-2,
+                    3e-2, 1e-2, 7e-2, 0)
+            },
+    'unequal': {
+        'type-l': (5e-3, 100, 5e-4, 100, 1.0e-3, 100, 1e-2, 100, 6.67e-6, 0,
+                   3e-2, 3e-2, 1e-2, 7e-2, 0),
+        'collapse': (5e-3, 100, 5e-4, 100, 0.2, 100, 1e-2, 100, 1.0e-4, 0,
+                     3e-2, 3e-2, 1e-2, 7e-2, 0),
+        'soft': (5e-3, 10, 5e-4, 10000, 3000, 100, 1e-2, 100, 6.35e-6, 0,
+                 6.5e-2, 2.0e-2, 1e-2, 7e-2, 0),
+        'oscillatory': (5e-3, 10, 5e-4, 10000, 3000, 100, 1e-2, 100,
+                        1.3e-5, 0, 6.5e-2, 2.0e-2, 1e-2, 7e-2, 0)
+        }
            
     }
 
@@ -190,19 +198,4 @@ def plot_society(time, commoner_population, elite_population, nature, wealth, ca
     plt.xlabel('Time (years)')
     plt.show()
 
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('society', help='Society. One of {egalitarian, equitable, unequal}')
-    parser.add_argument('type', help='Socity type. Supported types for socities are: egalitarian : {soft, oscillatory, cyclic, collapse}, equitable : {soft, oscillatory, cyclic, collapse, inverse}, unequal : {type-l, collapse, soft, oscillatory}')
-    parser.add_argument('years', help='Years to run society model')
-    args = parser.parse_args()
-    soc = create_society(args.society, args.type)
-    print(soc.carrying_capacity)
-    result = soc.evolve(int(args.years))
-    plot_society(*result)
-
-
-if __name__ == '__main__':
-    main()
 
