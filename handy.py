@@ -75,6 +75,13 @@ class Society(object):
                 + max(0, 1 - self.elite_consumption / (self.salary * self.elite_population))
                 * (self.famine_death_rate - self.normal_death_rate))
 
+    @property
+    def carrying_capacity(self):
+        eta = ((self.famine_death_rate - self.commoner_birth_rate) /
+               (self.famine_death_rate - self.normal_death_rate))
+        return ((self.nature_regeneration / (eta * self.salary)) *
+                (self.nature_capacity / 2) ** 2)
+
     def next(self):
         self._integrator.set_f_params(self.commoner_birth_rate,
             self.elite_birth_rate, self.commoner_death_rate,
@@ -95,6 +102,7 @@ class Society(object):
         elite_population = []
         nature = []
         wealth = []
+        carrying_capacity = []
 
         for year in range(self.year, years):
             next_y, next_cp, next_ep, next_n, next_w = self.next()
@@ -103,8 +111,9 @@ class Society(object):
             elite_population.append(next_ep)
             nature.append(next_n)
             wealth.append(next_w)
+            carrying_capacity.append(self.carrying_capacity)
 
-        return time, commoner_population, elite_population, nature, wealth
+        return time, commoner_population, elite_population, nature, wealth, carrying_capacity
 
 
 socity_types = { 'egalitarian': { 'soft': (5e-3, 1, 5e-4, 100, 0, 100, 1e-2,
@@ -162,11 +171,12 @@ def create_society(name, soc_type):
         raise ValueError('Unknown society type: {0} {1}'.format(name, soc_type))
 
 
-def plot_society(time, commoner_population, elite_population, nature, wealth):
+def plot_society(time, commoner_population, elite_population, nature, wealth, carrying_capacity):
     plt.clf()
     plt.subplot(411)
-    plt.plot(time, commoner_population)
+    plt.plot(time, commoner_population, time, carrying_capacity)
     plt.ylabel('Commoner population', fontdict = {'fontsize' : 'x-small'})
+    plt.title('Society evolution')
     plt.subplot(412)
     plt.plot(time, elite_population)
     plt.ylabel('Elite population', fontdict = {'fontsize' : 'x-small'})
@@ -187,7 +197,8 @@ def main():
     parser.add_argument('type', help='Socity type. Supported types for socities are: egalitarian : {soft, oscillatory, cyclic, collapse}, equitable : {soft, oscillatory, cyclic, collapse, inverse}, unequal : {type-l, collapse, soft, oscillatory}')
     parser.add_argument('years', help='Years to run society model')
     args = parser.parse_args()
-    soc = create_society(args.society, args.type) 
+    soc = create_society(args.society, args.type)
+    print(soc.carrying_capacity)
     result = soc.evolve(int(args.years))
     plot_society(*result)
 
