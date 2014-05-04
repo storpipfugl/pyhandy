@@ -15,6 +15,9 @@ pyhandy requires scipy >= 0.10.0 and matplotlib
 
 Usage
 =====
+
+Command line
+------------
 pyhandy support running and plotting predefined society evolutions from the command line e.g.
 
     $ handy_model_run.py equitable cyclic 1000
@@ -27,6 +30,8 @@ To see the full set of supported society types supported by the command line too
 
     $ handy_model_run.py -h
 
+Directly
+--------
 pyhandy supports custom society calculations by using the **Society** class from **pyhandy.handy**
 
 The **Society** class takes the following arguments as initial conditions for a society:
