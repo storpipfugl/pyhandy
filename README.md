@@ -1,7 +1,23 @@
 pyhandy
 =======
 
-Python implementation of the Human and Nature Dynamics (HANDY) model
+Python implementation of the Human and Nature Dynamics (HANDY) model (http://www.atmos.umd.edu/~ekalnay/pubs/2014-03-18-handy1-paper-draft-safa-motesharrei-rivas-kalnay.pdf)
+
+NOTE: The authors of the HANDY model are not associated with this implementation or endorses it.
+
+Installation
+============
+From source:
+
+    $ python setup.py install
+
+pyhandy requires scipy >= 0.10.0
+
+Usage
+=====
+pyhandy support running and plotting predefined society evolutions from the command line e.g.
+
+    $ handy\_model\_run.py equitable cyclic 1000
 
 MIT License
 ===========
