@@ -17,7 +17,11 @@ Usage
 =====
 pyhandy support running and plotting predefined society evolutions from the command line e.g.
 
-    $ handy\_model\_run.py equitable cyclic 1000
+    $ handy_model_run.py equitable cyclic 1000
+
+resulting in the following plot being shown:
+
+![Alt text](/images/equitable_cyclic.png?raw=true)
 
 MIT License
 ===========
